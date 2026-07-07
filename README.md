@@ -2,53 +2,25 @@
 
 An interactive, responsive, web-based simulation tool designed to demonstrate and visualize different CPU scheduling algorithms used by Operating Systems.
 
-This simulator runs scheduling logic inside **compiled C++ executables** and displays the output (Gantt chart and table metrics) in a modern web browser.
+This simulator runs scheduling logic entirely in the browser using HTML and vanilla JavaScript.
 
 ## Project Structure
-- `FCFS/fcfs.cpp`: Contains the C++ scheduling logic and console interface for FCFS.
-- `SJF/sjf.cpp`: Contains the C++ scheduling logic and console interface for SJF.
+- `FCFS/FCFS.js`: Contains the JavaScript scheduling logic and simulation runner for FCFS.
+- `SJF/SJF.js`: Contains the JavaScript scheduling logic and simulation runner for SJF.
 - `UI/index.html`: Main dashboard to navigate between the scheduler simulators.
 - `UI/FCFS.html`: Web interface for FCFS simulation.
 - `UI/SJF.html`: Web interface for SJF simulation.
 - `UI/style.css`: Unified stylesheet featuring modern typography and a dark glassmorphic design.
-- `server.js`: Node.js server bridging the Web UI and the compiled C++ executables.
 
 ---
 
-## Running the Web Simulator (C++ Executable Backend)
+## Running the Web Simulator
 
-To allow the browser to run calculations directly from the C++ binaries, start the local Node.js server:
+Since the application runs entirely client-side using vanilla HTML, CSS, and JS, no server setup or compilation is required.
 
-1. Open a terminal in the project directory.
-2. Run the Node.js server:
-   ```bash
-   node server.js
-   ```
-3. Open your browser and navigate to:
-   ```
-   http://localhost:3000
-   ```
-4. Load the sample scenario or add processes, and click **Run Simulation**. The server will automatically compile the `.cpp` source files (using `g++`) on your first request and execute the compiled binary (`.exe`) to return the results.
-
-*Note: If the Node.js server is offline or the pages are loaded via `file://` protocol, the UI will display a warning and automatically fall back to browser-side JavaScript simulation so the webpage remains fully interactive.*
-
----
-
-## Running the Standalone C++ Console Applications
-
-The core algorithms can also be compiled and executed directly from the terminal as standalone command-line programs:
-
-### Compiling and Running FCFS
-```bash
-g++ -O3 FCFS/fcfs.cpp -o FCFS/fcfs_simulator
-./FCFS/fcfs_simulator
-```
-
-### Compiling and Running SJF
-```bash
-g++ -O3 SJF/sjf.cpp -o SJF/sjf_simulator
-./SJF/sjf_simulator
-```
+1. Locate the file `UI/index.html` in your project folder.
+2. Open `index.html` directly in any modern web browser (by double-clicking it or using your browser's "Open File" option).
+3. Select an algorithm (such as FCFS or SJF) from the dashboard to run and visualize scheduling simulations.
 
 ---
 
