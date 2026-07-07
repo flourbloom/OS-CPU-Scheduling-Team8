@@ -2,27 +2,391 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Round Robin Simulator - Coming Soon</title>
-    <link rel="stylesheet" href="style.css">
-    <script defer src="../RR/RR.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Round Robin Scheduler</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        /* Scoped fallback styles in case style.css does not define these classes yet.
+     Safe to remove/merge into the shared stylesheet if it already covers them. */
+        :root {
+            --rr-bg: #0f1115;
+            --rr-panel: #171a21;
+            --rr-border: #2a2f3a;
+            --rr-text: #e6e8ec;
+            --rr-muted: #8a90a0;
+            --rr-accent: #5b8cff;
+            --rr-accent2: #ff9f5b;
+            --rr-green: #4cd18a;
+            --rr-red: #ff6b6b;
+        }
+
+        body {
+            background: var(--rr-bg);
+            color: var(--rr-text);
+            font-family: "Segoe UI", Roboto, Arial, sans-serif;
+            margin: 0;
+            padding: 24px;
+        }
+
+        h1 {
+            font-size: 22px;
+            margin: 0 0 4px;
+        }
+
+        .subtitle {
+            color: var(--rr-muted);
+            margin: 0 0 20px;
+            font-size: 14px;
+        }
+
+        .rr-layout {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .panel {
+            background: var(--rr-panel);
+            border: 1px solid var(--rr-border);
+            border-radius: 10px;
+            padding: 16px;
+            flex: 1;
+            min-width: 320px;
+        }
+
+        .panel h2 {
+            font-size: 15px;
+            margin: 0 0 12px;
+            color: var(--rr-accent);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th,
+        td {
+            padding: 6px 8px;
+            text-align: center;
+            border-bottom: 1px solid var(--rr-border);
+        }
+
+        th {
+            color: var(--rr-muted);
+            font-weight: 600;
+        }
+
+        input[type=text],
+        input[type=number] {
+            width: 100%;
+            box-sizing: border-box;
+            background: #0c0e13;
+            color: var(--rr-text);
+            border: 1px solid var(--rr-border);
+            border-radius: 6px;
+            padding: 4px 6px;
+            font-size: 13px;
+        }
+
+        .row-actions button {
+            background: transparent;
+            border: none;
+            color: var(--rr-red);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn {
+            background: var(--rr-accent);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn.secondary {
+            background: #2a2f3a;
+        }
+
+        .btn.accent2 {
+            background: var(--rr-accent2);
+            color: #241705;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .quantum-field {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--rr-muted);
+        }
+
+        .quantum-field input {
+            width: 70px;
+        }
+
+        #ganttWrap {
+            overflow-x: hidden;
+            margin-top: 10px;
+            padding-right: 24px;
+        }
+
+        #gantt {
+            display: flex;
+            align-items: flex-end;
+            min-height: 70px;
+        }
+
+        .gantt-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 48px;
+            border-right: 1px solid var(--rr-bg);
+            font-size: 12px;
+            font-weight: 600;
+            color: #0c0e13;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .gantt-idle {
+            background: repeating-linear-gradient(45deg, #22262f, #22262f 6px, #1a1d24 6px, #1a1d24 12px);
+            color: var(--rr-muted);
+        }
+
+        .gantt-ticks {
+            display: flex;
+            font-size: 11px;
+            color: var(--rr-muted);
+            margin-top: 4px;
+        }
+
+        .gantt-tick {
+            border-left: 1px solid var(--rr-border);
+            text-align: left;
+            padding-left: 2px;
+            box-sizing: border-box;
+        }
+
+        .avg-cards {
+            display: flex;
+            gap: 12px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        .avg-card {
+            background: #0c0e13;
+            border: 1px solid var(--rr-border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            min-width: 140px;
+        }
+
+        .avg-card .label {
+            font-size: 11px;
+            color: var(--rr-muted);
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .avg-card .value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--rr-accent2);
+            margin-top: 2px;
+        }
+
+        .error {
+            color: var(--rr-red);
+            font-size: 13px;
+            margin-top: 8px;
+            min-height: 16px;
+        }
+
+        .pid-swatch {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+
+        /* Step controls + wait queue */
+        .step-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .step-status {
+            font-size: 12px;
+            color: var(--rr-muted);
+            margin-left: 2px;
+        }
+
+        #waitQueue {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            background: #0c0e13;
+            border: 1px solid var(--rr-border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            min-height: 40px;
+            margin-top: 8px;
+        }
+
+        .queue-chip {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: #171a21;
+            border: 1px solid var(--rr-border);
+            border-radius: 20px;
+            padding: 4px 10px 4px 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .queue-chip-next {
+            outline: 2px solid var(--rr-accent);
+            outline-offset: 1px;
+        }
+
+        .queue-remaining {
+            color: var(--rr-muted);
+            font-weight: 400;
+        }
+
+        .queue-empty {
+            color: var(--rr-muted);
+            font-size: 12px;
+            font-style: italic;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="container"
-        style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; text-align: center;">
-        <header>
-            <span class="badge badge-soon" style="font-size: 0.9rem; padding: 0.4rem 1rem;">Coming Soon</span>
-            <h1 style="margin-top: 1rem;">Round Robin (RR) Scheduler</h1>
-            <p class="subtitle" style="max-width: 600px; margin: 1rem auto 2rem;">This simulation module is currently
-                under development. The active schedulers available for use are FCFS and SJF.</p>
-        </header>
 
-        <main>
-             <a href="../index.html" class="btn btn-primary">Return to Dashboard</a>
-        </main>
+    <h1>Round Robin Scheduler</h1>
+    <p class="subtitle">Preemptive CPU scheduling with a fixed time quantum. Enter processes, set the quantum, then step
+        through the schedule one turn at a time.</p>
+
+    <div class="rr-layout">
+
+        <!-- Input panel -->
+        <div class="panel" style="flex:0 0 360px;">
+            <h2>Process Input</h2>
+            <table id="processTable">
+                <thead>
+                    <tr>
+                        <th>PID</th>
+                        <th>Arrival</th>
+                        <th>Burst</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="processBody"></tbody>
+            </table>
+            <div class="toolbar">
+                <button class="btn secondary" id="addRowBtn">+ Add Process</button>
+                <button class="btn secondary" id="loadSampleBtn">Load Sample Scenario</button>
+            </div>
+            <div class="toolbar">
+                <div class="quantum-field">
+                    <label for="quantumInput">Time Quantum</label>
+                    <input type="number" id="quantumInput" min="1" step="1" value="2" />
+                </div>
+                <button class="btn" id="startBtn">Approve</button>
+            </div>
+            <div class="error" id="errorMsg"></div>
+        </div>
+
+        <!-- Results panel -->
+        <div class="panel">
+            <div class="step-controls">
+                <button class="btn" id="nextBtn">Next ▶</button>
+                <button class="btn accent2" id="playAllBtn">Play All ⏭</button>
+                <span class="step-status" id="stepStatus">Click "Start Simulation" to begin.</span>
+            </div>
+
+            <h2>Gantt Chart</h2>
+            <div id="ganttWrap">
+                <div id="gantt"></div>
+                <div class="gantt-ticks" id="ganttTicks"></div>
+            </div>
+
+            <h2 style="margin-top:20px;">Wait Queue</h2>
+            <div id="waitQueue"></div>
+
+            <h2 style="margin-top:20px;">Metrics</h2>
+            <table id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>PID</th>
+                        <th>Arrival</th>
+                        <th>Burst</th>
+                        <th>Completion</th>
+                        <th>Waiting</th>
+                        <th>Turnaround</th>
+                        <th>Response</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody"></tbody>
+            </table>
+
+            <div class="avg-cards">
+                <div class="avg-card">
+                    <div class="label">Avg Waiting Time</div>
+                    <div class="value" id="avgWait">–</div>
+                </div>
+                <div class="avg-card">
+                    <div class="label">Avg Turnaround Time</div>
+                    <div class="value" id="avgTurn">–</div>
+                </div>
+                <div class="avg-card">
+                    <div class="label">Avg Response Time</div>
+                    <div class="value" id="avgResp">–</div>
+                </div>
+            </div>
+        </div>
+
     </div>
+
+    <script src="../RR/RR.js"></script>
+    <br>
+    <a href="../index.html" class="btn btn-primary srt-btn"
+        style="background:#1e5fa8; color:#fff; text-decoration:none; display:inline-block;">Return to Dashboard</a>
 </body>
 
 </html>
