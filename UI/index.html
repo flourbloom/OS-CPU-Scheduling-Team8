@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU Scheduling Simulator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>CPU Scheduling Simulator</h1>
+            <p class="subtitle">An interactive visualization tool to simulate and compare different Operating System CPU scheduling algorithms.</p>
+        </header>
+
+        <main>
+            <section class="grid-dashboard">
+                <!-- FCFS Card -->
+                <div class="card">
+                    <div>
+                        <span class="badge badge-active">Fully Implemented</span>
+                        <h2 class="card-title">First Come First Serve (FCFS)</h2>
+                        <p class="card-desc">Non-preemptive algorithm that schedules processes strictly based on their arrival time. Simpler, but prone to the Convoy Effect.</p>
+                    </div>
+                    <a href="FCFS.html" class="btn btn-primary">Launch FCFS</a>
+                </div>
+
+                <!-- SJF Card -->
+                <div class="card">
+                    <div>
+                        <span class="badge badge-active">Fully Implemented</span>
+                        <h2 class="card-title">Shortest Job First (SJF)</h2>
+                        <p class="card-desc">Non-preemptive algorithm that selects the process with the shortest burst time. Minimizes average waiting time.</p>
+                    </div>
+                    <a href="SJF.html" class="btn btn-primary">Launch SJF</a>
+                </div>
+
+                <!-- SRT Card -->
+                <div class="card disabled">
+                    <div>
+                        <span class="badge badge-soon">Coming Soon</span>
+                        <h2 class="card-title">Shortest Remaining Time (SRT)</h2>
+                        <p class="card-desc">Preemptive version of Shortest Job First scheduling. Dynamically preempts currently running process if a shorter job arrives.</p>
+                    </div>
+                    <a href="SRT.html" class="btn btn-secondary">Preview SRT</a>
+                </div>
+
+                <!-- RR Card -->
+                <div class="card disabled">
+                    <div>
+                        <span class="badge badge-soon">Coming Soon</span>
+                        <h2 class="card-title">Round Robin (RR)</h2>
+                        <p class="card-desc">Preemptive algorithm that allocates a fixed time slice (quantum) to each process in cyclic order. Ensures fairness.</p>
+                    </div>
+                    <a href="RR.html" class="btn btn-secondary">Preview RR</a>
+                </div>
+
+                <!-- MLFQ Card -->
+                <div class="card disabled">
+                    <div>
+                        <span class="badge badge-soon">Coming Soon</span>
+                        <h2 class="card-title">Multilevel Feedback Queue (MLFQ)</h2>
+                        <p class="card-desc">A dynamic scheduler using multiple priority queues with differing time quantum values, aging, and promotion/demotion logic.</p>
+                    </div>
+                    <a href="MLFQ.html" class="btn btn-secondary">Preview MLFQ</a>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>CPU Scheduling Simulator - Team 8. View implementation details on <a href="https://github.com/" target="_blank">GitHub</a>.</p>
+        </footer>
+    </div>
+</body>
+</html>
