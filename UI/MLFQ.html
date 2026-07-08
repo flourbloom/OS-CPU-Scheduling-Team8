@@ -2,27 +2,461 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MLFQ Simulator - Coming Soon</title>
-    <link rel="stylesheet" href="style.css">
-    <script defer src="../MLFQ/MLFQ.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MLFQ Scheduler</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        /* Scoped fallback styles in case style.css does not define these classes yet.
+     Safe to remove/merge into the shared stylesheet if it already covers them. */
+        :root {
+            --mlfq-bg: #0f1115;
+            --mlfq-panel: #171a21;
+            --mlfq-border: #2a2f3a;
+            --mlfq-text: #e6e8ec;
+            --mlfq-muted: #8a90a0;
+            --mlfq-accent: #5b8cff;
+            --mlfq-accent2: #ff9f5b;
+            --mlfq-green: #4cd18a;
+            --mlfq-red: #ff6b6b;
+            --mlfq-q0: #5b8cff;
+            --mlfq-q1: #ff9f5b;
+            --mlfq-q2: #4cd18a;
+        }
+
+        body {
+            background: var(--mlfq-bg);
+            color: var(--mlfq-text);
+            font-family: "Segoe UI", Roboto, Arial, sans-serif;
+            margin: 0;
+            padding: 24px;
+        }
+
+        h1 {
+            font-size: 22px;
+            margin: 0 0 4px;
+        }
+
+        .subtitle {
+            color: var(--mlfq-muted);
+            margin: 0 0 20px;
+            font-size: 14px;
+        }
+
+        .mlfq-layout {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .panel {
+            background: var(--mlfq-panel);
+            border: 1px solid var(--mlfq-border);
+            border-radius: 10px;
+            padding: 16px;
+            flex: 1;
+            min-width: 320px;
+        }
+
+        .panel h2 {
+            font-size: 15px;
+            margin: 0 0 12px;
+            color: var(--mlfq-accent);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th,
+        td {
+            padding: 6px 8px;
+            text-align: center;
+            border-bottom: 1px solid var(--mlfq-border);
+        }
+
+        th {
+            color: var(--mlfq-muted);
+            font-weight: 600;
+        }
+
+        input[type=text],
+        input[type=number] {
+            width: 100%;
+            box-sizing: border-box;
+            background: #0c0e13;
+            color: var(--mlfq-text);
+            border: 1px solid var(--mlfq-border);
+            border-radius: 6px;
+            padding: 4px 6px;
+            font-size: 13px;
+        }
+
+        .row-actions button {
+            background: transparent;
+            border: none;
+            color: var(--mlfq-red);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn {
+            background: var(--mlfq-accent);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn.secondary {
+            background: #2a2f3a;
+        }
+
+        .btn.accent2 {
+            background: var(--mlfq-accent2);
+            color: #241705;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .quantum-field {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--mlfq-muted);
+        }
+
+        .quantum-field input {
+            width: 70px;
+        }
+
+        #ganttWrap {
+            overflow-x: hidden;
+            margin-top: 10px;
+            padding-right: 24px;
+        }
+
+        #gantt {
+            display: flex;
+            align-items: flex-end;
+            min-height: 70px;
+        }
+
+        .gantt-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 48px;
+            border-right: 1px solid var(--mlfq-bg);
+            font-size: 12px;
+            font-weight: 600;
+            color: #0c0e13;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .gantt-block .qtag {
+            font-size: 9px;
+            font-weight: 700;
+            opacity: 0.75;
+        }
+
+        .gantt-idle {
+            background: repeating-linear-gradient(45deg, #22262f, #22262f 6px, #1a1d24 6px, #1a1d24 12px);
+            color: var(--mlfq-muted);
+        }
+
+        .gantt-ticks {
+            display: flex;
+            font-size: 11px;
+            color: var(--mlfq-muted);
+            margin-top: 4px;
+        }
+
+        .gantt-tick {
+            border-left: 1px solid var(--mlfq-border);
+            text-align: left;
+            padding-left: 2px;
+            box-sizing: border-box;
+        }
+
+        .avg-cards {
+            display: flex;
+            gap: 12px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        .avg-card {
+            background: #0c0e13;
+            border: 1px solid var(--mlfq-border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            min-width: 140px;
+        }
+
+        .avg-card .label {
+            font-size: 11px;
+            color: var(--mlfq-muted);
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .avg-card .value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--mlfq-accent2);
+            margin-top: 2px;
+        }
+
+        .error {
+            color: var(--mlfq-red);
+            font-size: 13px;
+            margin-top: 8px;
+            min-height: 16px;
+        }
+
+        .pid-swatch {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+
+        /* Step controls */
+        .step-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .step-status {
+            font-size: 12px;
+            color: var(--mlfq-muted);
+            margin-left: 2px;
+        }
+
+        /* Multi-queue panels */
+        .queue-levels {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .queue-level {
+            border: 1px solid var(--mlfq-border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            background: #0c0e13;
+        }
+
+        .queue-level-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .queue-level-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .queue-chips {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            min-height: 28px;
+        }
+
+        .queue-chip {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: #171a21;
+            border: 1px solid var(--mlfq-border);
+            border-radius: 20px;
+            padding: 4px 10px 4px 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .queue-chip-next {
+            outline: 2px solid var(--mlfq-accent);
+            outline-offset: 1px;
+        }
+
+        .queue-remaining {
+            color: var(--mlfq-muted);
+            font-weight: 400;
+        }
+
+        .queue-empty {
+            color: var(--mlfq-muted);
+            font-size: 12px;
+            font-style: italic;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="container"
-        style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; text-align: center;">
-        <header>
-            <span class="badge badge-soon" style="font-size: 0.9rem; padding: 0.4rem 1rem;">Coming Soon</span>
-            <h1 style="margin-top: 1rem;">Multilevel Feedback Queue (MLFQ)</h1>
-            <p class="subtitle" style="max-width: 600px; margin: 1rem auto 2rem;">This feedback queue simulation module
-                is currently under development. The active schedulers available for use are FCFS and SJF.</p>
-        </header>
 
-        <main>
-            <a href="../index.html" class="btn btn-primary">Return to Dashboard</a>
-        </main>
+    <h1>Multilevel Feedback Queue (MLFQ) Scheduler</h1>
+    <p class="subtitle">Queue 0 (RR, top priority) → Queue 1 (RR, mid priority) → Queue 2 (FCFS, bottom priority).
+        Processes demote when they burn a full quantum, and age back up if they wait too long. Step through the
+        schedule one tick at a time.</p>
+
+    <div class="mlfq-layout">
+
+        <!-- Input panel -->
+        <div class="panel" style="flex:0 0 360px;">
+            <h2>Process Input</h2>
+            <table id="processTable">
+                <thead>
+                    <tr>
+                        <th>PID</th>
+                        <th>Arrival</th>
+                        <th>Burst</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="processBody"></tbody>
+            </table>
+            <div class="toolbar">
+                <button class="btn secondary" id="addRowBtn">+ Add Process</button>
+                <button class="btn secondary" id="loadSampleBtn">Load Sample Scenario</button>
+            </div>
+            <div class="toolbar">
+                <div class="quantum-field">
+                    <label for="quantum0Input">Queue 0 Quantum</label>
+                    <input type="number" id="quantum0Input" min="1" step="1" value="2" />
+                </div>
+                <div class="quantum-field">
+                    <label for="quantum1Input">Queue 1 Quantum</label>
+                    <input type="number" id="quantum1Input" min="1" step="1" value="4" />
+                </div>
+            </div>
+            <div class="toolbar">
+                <div class="quantum-field">
+                    <label for="agingInput">Aging Threshold</label>
+                    <input type="number" id="agingInput" min="1" step="1" value="8" />
+                </div>
+                <button class="btn" id="startBtn">Start Simulation</button>
+            </div>
+            <div class="error" id="errorMsg"></div>
+        </div>
+
+        <!-- Results panel -->
+        <div class="panel">
+            <div class="step-controls">
+                <button class="btn" id="nextBtn">Next ▶</button>
+                <button class="btn accent2" id="playAllBtn">Play All ⏭</button>
+                <span class="step-status" id="stepStatus">Click "Start Simulation" to begin.</span>
+            </div>
+
+            <h2>Gantt Chart</h2>
+            <div id="ganttWrap">
+                <div id="gantt"></div>
+                <div class="gantt-ticks" id="ganttTicks"></div>
+            </div>
+
+            <h2 style="margin-top:20px;">Queues</h2>
+            <div class="queue-levels">
+                <div class="queue-level">
+                    <div class="queue-level-title">
+                        <span class="queue-level-dot" style="background:var(--mlfq-q0);"></span>
+                        Queue 0 — Round Robin
+                    </div>
+                    <div class="queue-chips" id="queueLevel0"></div>
+                </div>
+                <div class="queue-level">
+                    <div class="queue-level-title">
+                        <span class="queue-level-dot" style="background:var(--mlfq-q1);"></span>
+                        Queue 1 — Round Robin
+                    </div>
+                    <div class="queue-chips" id="queueLevel1"></div>
+                </div>
+                <div class="queue-level">
+                    <div class="queue-level-title">
+                        <span class="queue-level-dot" style="background:var(--mlfq-q2);"></span>
+                        Queue 2 — FCFS
+                    </div>
+                    <div class="queue-chips" id="queueLevel2"></div>
+                </div>
+            </div>
+
+            <h2 style="margin-top:20px;">Metrics</h2>
+            <table id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>PID</th>
+                        <th>Arrival</th>
+                        <th>Burst</th>
+                        <th>Completion</th>
+                        <th>Waiting</th>
+                        <th>Turnaround</th>
+                        <th>Response</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody"></tbody>
+            </table>
+
+            <div class="avg-cards">
+                <div class="avg-card">
+                    <div class="label">Avg Waiting Time</div>
+                    <div class="value" id="avgWait">–</div>
+                </div>
+                <div class="avg-card">
+                    <div class="label">Avg Turnaround Time</div>
+                    <div class="value" id="avgTurn">–</div>
+                </div>
+                <div class="avg-card">
+                    <div class="label">Avg Response Time</div>
+                    <div class="value" id="avgResp">–</div>
+                </div>
+            </div>
+        </div>
+
     </div>
+
+    <script src="../MLFQ/MLFQ.js"></script>
+    <br>
+    <a href="../index.html" class="btn btn-primary srt-btn"
+        style="background:#1e5fa8; color:#fff; text-decoration:none; display:inline-block;">Return to Dashboard</a>
 </body>
 
 </html>
